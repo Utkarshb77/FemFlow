@@ -1,0 +1,14 @@
+/* FemFlow - Global styles handled in App.css */
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+a {
+  text-decoration: inherit;
+  color: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}

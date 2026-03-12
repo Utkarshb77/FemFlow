@@ -1,0 +1,141 @@
+FemFlow — Period Tracking & PCOS Management App
+
+
+Problem Statement: Build a full-stack period tracking web app that helps women monitor their menstrual cycles, daily habits, and symptoms to reduce PCOS risk through data-driven insights.
+
+
+Tech Stack:
+
+Frontend: React (with React Router, Recharts for charts, Axios)
+
+Backend: Node.js + Express
+
+Database: MongoDB (via Mongoose)
+
+Auth: JWT-based authentication
+
+Notifications: node-cron for scheduled reminders + browser notifications
+
+
+
+Project Structure :
+
+femflow/
+├── client/              # React frontend
+│   ├── src/
+│   │   ├── components/  # Reusable UI components
+│   │   ├── pages/       # Route-level pages
+│   │   ├── context/     # Auth & app context
+│   │   ├── services/    # API call functions
+│   │   └── utils/       # Helpers (cycle prediction, PCOS scoring)
+│   └── package.json
+├── server/              # Express backend
+│   ├── models/          # Mongoose schemas
+│   ├── routes/          # API routes
+│   ├── controllers/     # Route handlers
+│   ├── middleware/      # Auth middleware
+│   ├── utils/           # Prediction & scoring logic
+│   └── server.js
+└── package.json
+
+
+
+Database Models
+
+User - email, password (hashed), name, dateOfBirth, profileSettings
+CycleLog - userId, startDate, endDate, cycleLength, periodLength, notes
+DailyLog - userId, date, symptoms (array), mood, sleepHours, waterIntake, exerciseMinutes, stressLevel (1-5), diet (tags), weight, notes
+Reminder  userId, type (period/medication/habit), message, scheduledTime, isActive
+
+
+
+Core Features:
+
+1. Authentication
+Register/Login with JWT
+Protected routes on both frontend and backend
+
+2. Period & Cycle Tracking
+Log period start/end dates
+Auto-calculate cycle length and period duration
+Calendar view showing past periods and predicted upcoming ones
+
+3. Cycle Prediction Algorithm
+Calculate average cycle length from last 3-6 cycles
+Predict next period start date, fertile window, and ovulation day
+Show predictions on the dashboard calendar
+
+4. Symptom & Mood Logging
+Daily log form: mood (emoji picker), symptoms (multi-select from predefined list like cramps, bloating, headache, acne, fatigue, etc.), sleep, water, exercise, stress, diet tags
+View historical logs in a timeline
+
+5. PCOS Risk Indicators
+Scoring algorithm based on:
+Cycle irregularity (standard deviation of cycle lengths)
+Symptom frequency (acne, hair loss, weight gain, mood swings)
+Lifestyle factors (sleep < 7h, low exercise, high stress, poor diet)
+Display a PCOS risk score (Low / Moderate / High) with personalized tips
+Disclaimer: not a medical diagnosis
+
+6. Dashboard & Analytics
+Cycle history chart (line chart of cycle lengths over time)
+Symptom frequency bar chart
+Mood trend over time
+Lifestyle score (sleep, water, exercise averages)
+PCOS risk indicator widget
+Next period countdown
+
+7. Reminders & Notifications
+Set reminders for: upcoming period, medication, hydration, exercise
+Backend cron job checks reminders and marks them as triggered
+Frontend uses browser Notification API to display alerts
+
+
+API Endpoints
+
+Auth
+POST /api/auth/register
+POST /api/auth/login
+GET /api/auth/me
+
+Cycles
+POST /api/cycles — log a new cycle
+GET /api/cycles — get all cycles for user
+GET /api/cycles/predict — get predicted next cycle
+
+Daily Logs
+POST /api/logs — create/update daily log
+GET /api/logs?from=&to= — get logs in date range
+GET /api/logs/today — get today's log
+
+Analytics
+GET /api/analytics/pcos-score — get PCOS risk assessment
+GET /api/analytics/summary — get dashboard summary stats
+
+Reminders
+POST /api/reminders — create reminder
+GET /api/reminders — list reminders
+PUT /api/reminders/:id — update reminder
+DELETE /api/reminders/:id — delete reminder
+
+
+
+Implementation Order:
+
+Project scaffolding (init both client & server, install deps)
+
+Database models & connection
+
+Auth system (backend + frontend)
+
+Cycle logging & prediction
+
+Daily symptom/mood logging
+
+PCOS risk scoring engine
+
+Dashboard with charts
+
+Reminders system
+
+Polish UI with responsive styling
