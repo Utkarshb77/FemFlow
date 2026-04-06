@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiCalendar, FiEdit3, FiBarChart2, FiBell, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiCalendar, FiEdit3, FiBarChart2, FiLogOut } from 'react-icons/fi';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -13,7 +13,6 @@ export default function Navbar() {
     { to: '/cycles', icon: <FiCalendar />, label: 'Cycles' },
     { to: '/log', icon: <FiEdit3 />, label: 'Daily Log' },
     { to: '/analytics', icon: <FiBarChart2 />, label: 'Analytics' },
-    { to: '/reminders', icon: <FiBell />, label: 'Reminders' },
   ];
 
   return (

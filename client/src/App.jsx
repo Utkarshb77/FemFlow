@@ -8,7 +8,6 @@ import Dashboard from './pages/Dashboard';
 import Cycles from './pages/Cycles';
 import DailyLog from './pages/DailyLog';
 import Analytics from './pages/Analytics';
-import Reminders from './pages/Reminders';
 import './App.css';
 
 function AppRoutes() {
@@ -27,7 +26,6 @@ function AppRoutes() {
           <Route path="/cycles" element={<ProtectedRoute><Cycles /></ProtectedRoute>} />
           <Route path="/log" element={<ProtectedRoute><DailyLog /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-          <Route path="/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -107,7 +107,7 @@ function getCycleIrregularity(cycles) {
 
   return {
     stdDev: Math.round(stdDev * 10) / 10,
-    isIrregular: stdDev > 7, // >7 days std dev = irregular
+    isIrregular: stdDev > 7, 
     cycleLengths: lengths,
     mean: Math.round(mean),
   };

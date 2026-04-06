@@ -1,24 +1,36 @@
 import { useState, useEffect } from 'react';
-import { getCycles, createCycle, deleteCycle, getCyclePrediction } from '../services/api';
-import { FiTrash2, FiPlus } from 'react-icons/fi';
+import { getCycles, createCycle, updateCycle, deleteCycle, getCyclePrediction } from '../services/api';
+import { FiTrash2, FiDroplet, FiCheck } from 'react-icons/fi';
+
+const FLOW_OPTIONS = [
+  { value: 'spotting', label: 'Spotting', emoji: '💧', color: '#a5d6a7' },
+  { value: 'light', label: 'Light', emoji: '🩸', color: '#81c784' },
+  { value: 'medium', label: 'Medium', emoji: '🩸🩸', color: '#ffb74d' },
+  { value: 'heavy', label: 'Heavy', emoji: '🩸🩸🩸', color: '#e57373' },
+];
 
 export default function Cycles() {
   const [cycles, setCycles] = useState([]);
   const [prediction, setPrediction] = useState(null);
-  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    startDate: '',
-    endDate: '',
-    flow: 'medium',
-    notes: '',
-  });
+  const [todayLogged, setTodayLogged] = useState(false);
+  const [activeCycle, setActiveCycle] = useState(null);
 
   const fetchData = async () => {
     try {
       const [cycleRes, predRes] = await Promise.all([getCycles(), getCyclePrediction()]);
       setCycles(cycleRes.data);
       setPrediction(predRes.data);
+      
+      // Check if there's an active period (no end date) or if today is already logged
+      const today = new Date().toISOString().split('T')[0];
+      const active = cycleRes.data.find(c => !c.endDate);
+      setActiveCycle(active || null);
+      
+      if (active) {
+        const startDate = new Date(active.startDate).toISOString().split('T')[0];
+        setTodayLogged(startDate === today);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -28,15 +40,37 @@ export default function Cycles() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLogFlow = async (flow) => {
     try {
-      await createCycle(form);
-      setForm({ startDate: '', endDate: '', flow: 'medium', notes: '' });
-      setShowForm(false);
+      const today = new Date().toISOString().split('T')[0];
+      
+      if (activeCycle) {
+        // Update existing active cycle with today's flow
+        await updateCycle(activeCycle._id, { 
+          flow,
+          dailyFlows: [...(activeCycle.dailyFlows || []), { date: today, flow }]
+        });
+      } else {
+        // Start a new period
+        await createCycle({ startDate: today, flow });
+      }
+      
+      setTodayLogged(true);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error logging period');
+      alert(err.response?.data?.message || 'Error logging flow');
+    }
+  };
+
+  const handleEndPeriod = async () => {
+    if (!activeCycle) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await updateCycle(activeCycle._id, { endDate: today });
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error ending period');
     }
   };
 
@@ -49,9 +83,12 @@ export default function Cycles() {
 
   if (loading) return <div className="loading">Loading cycles...</div>;
 
+  // Show only last 5 periods
+  const recentCycles = cycles.slice(0, 5);
+
   return (
     <div className="cycles-page">
-      {/* Gemini Motivational Line */}
+      {/* Motivational Line */}
       {prediction?.motivationalLine && (
         <div className="motivational-banner">
           <p>{prediction.motivationalLine}</p>
@@ -60,15 +97,57 @@ export default function Cycles() {
 
       <div className="page-header">
         <h1>Cycle Tracking</h1>
-        <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          <FiPlus /> Log Period
-        </button>
+      </div>
+
+      {/* Daily Flow Tracker */}
+      <div className="card daily-flow-card">
+        <h3>
+          <FiDroplet /> {activeCycle ? "Log Today's Flow" : "Start Period"}
+        </h3>
+        
+        {activeCycle && (
+          <p className="period-status">
+            🔴 Period started on {new Date(activeCycle.startDate).toLocaleDateString()}
+            {activeCycle.dailyFlows?.length > 0 && ` • Day ${activeCycle.dailyFlows.length + 1}`}
+          </p>
+        )}
+
+        <div className="flow-picker">
+          {FLOW_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`flow-btn ${todayLogged ? 'disabled' : ''}`}
+              style={{ '--flow-color': opt.color }}
+              onClick={() => !todayLogged && handleLogFlow(opt.value)}
+              disabled={todayLogged}
+            >
+              <span className="flow-emoji">{opt.emoji}</span>
+              <span className="flow-label">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {todayLogged && (
+          <p className="logged-message">
+            <FiCheck /> Today's flow has been logged!
+          </p>
+        )}
+
+        {activeCycle && (
+          <button 
+            className="btn-secondary end-period-btn" 
+            onClick={handleEndPeriod}
+          >
+            End Period
+          </button>
+        )}
       </div>
 
       {/* Prediction Card */}
       {prediction && !prediction.message && (
         <div className="card prediction-card">
-          <h3>Cycle Predictions (Powered by Gemini AI)</h3>
+          <h3>Cycle Predictions</h3>
           <div className="prediction-grid">
             <div className="pred-item">
               <span className="pred-label">Next Period</span>
@@ -91,145 +170,45 @@ export default function Cycles() {
               </span>
             </div>
             <div className="pred-item">
-              <span className="pred-label">Avg Cycle Length</span>
+              <span className="pred-label">Avg Cycle</span>
               <span className="pred-value">{prediction.avgCycleLength} days</span>
             </div>
           </div>
-
-          {/* Gemini AI Insights */}
-          {prediction.aiInsights && (
-            <div className="ai-insights-section">
-              <h4>AI Insights</h4>
-              <div className="ai-tips-list">
-                {prediction.aiInsights.phaseInfo && (
-                  <div className="ai-tip-item">
-                    <span className="ai-tip-icon">🌙</span>
-                    <div>
-                      <strong>Current Phase</strong>
-                      <p>{prediction.aiInsights.phaseInfo}</p>
-                    </div>
-                  </div>
-                )}
-                {prediction.aiInsights.bodyTip && (
-                  <div className="ai-tip-item">
-                    <span className="ai-tip-icon">🧬</span>
-                    <div>
-                      <strong>Body Tip</strong>
-                      <p>{prediction.aiInsights.bodyTip}</p>
-                    </div>
-                  </div>
-                )}
-                {prediction.aiInsights.wellnessTip && (
-                  <div className="ai-tip-item">
-                    <span className="ai-tip-icon">💆‍♀️</span>
-                    <div>
-                      <strong>Wellness Tip</strong>
-                      <p>{prediction.aiInsights.wellnessTip}</p>
-                    </div>
-                  </div>
-                )}
-                {prediction.aiInsights.prediction_note && (
-                  <div className="ai-tip-item">
-                    <span className="ai-tip-icon">📊</span>
-                    <div>
-                      <strong>Prediction Note</strong>
-                      <p>{prediction.aiInsights.prediction_note}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              {prediction.aiInsights.encouragement && (
-                <div className="ai-encouragement">{prediction.aiInsights.encouragement}</div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
-      {/* Log Form */}
-      {showForm && (
-        <div className="card form-card">
-          <h3>Log New Period</h3>
-          <form onSubmit={handleSubmit} className="cycle-form">
-            <div className="form-row">
-              <div className="form-group">
-                <label>Start Date *</label>
-                <input
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>End Date</label>
-                <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label>Flow</label>
-                <select
-                  value={form.flow}
-                  onChange={(e) => setForm({ ...form, flow: e.target.value })}
-                >
-                  <option value="light">Light</option>
-                  <option value="medium">Medium</option>
-                  <option value="heavy">Heavy</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Notes</label>
-              <textarea
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder="Any notes about this cycle..."
-                rows={2}
-              />
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="btn-primary">Save</button>
-              <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Cycle History */}
+      {/* Recent Periods - Last 5 */}
       <div className="card">
-        <h3>Cycle History</h3>
-        {cycles.length === 0 ? (
-          <p className="empty-state">No cycles logged yet. Start by logging your period above.</p>
+        <h3>Recent Periods (Last 5)</h3>
+        {recentCycles.length === 0 ? (
+          <p className="empty-state">No periods logged yet. Start tracking above!</p>
         ) : (
           <div className="cycle-list">
-            {cycles.map((cycle) => (
-              <div key={cycle._id} className="cycle-item">
+            {recentCycles.map((cycle) => (
+              <div key={cycle._id} className={`cycle-item ${!cycle.endDate ? 'active' : ''}`}>
                 <div className="cycle-dates">
                   <span className="date-start">
                     {new Date(cycle.startDate).toLocaleDateString()}
                   </span>
-                  {cycle.endDate && (
+                  {cycle.endDate ? (
                     <>
                       <span className="date-arrow">→</span>
                       <span className="date-end">
                         {new Date(cycle.endDate).toLocaleDateString()}
                       </span>
                     </>
+                  ) : (
+                    <span className="ongoing-badge">Ongoing</span>
                   )}
                 </div>
                 <div className="cycle-meta">
                   <span className={`flow-badge flow-${cycle.flow}`}>{cycle.flow}</span>
                   {cycle.periodLength && <span>{cycle.periodLength} days</span>}
                   {cycle.cycleLength && (
-                    <span className="cycle-length">Cycle: {cycle.cycleLength} days</span>
+                    <span className="cycle-length">Cycle: {cycle.cycleLength}d</span>
                   )}
                 </div>
-                <button className="btn-icon" onClick={() => handleDelete(cycle._id)}>
+                <button className="btn-icon danger" onClick={() => handleDelete(cycle._id)}>
                   <FiTrash2 />
                 </button>
               </div>

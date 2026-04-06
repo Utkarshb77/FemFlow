@@ -60,13 +60,13 @@ FemFlow is a full-stack **Period Tracking & PCOS (Polycystic Ovary Syndrome) Man
                    │ HTTP (REST JSON)
                    ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                    SERVER (Express.js API)                        │
+│                    SERVER (Express.js API)                       │
 │                                                                  │
 │  ┌────────────┐  ┌────────────────────────────────────────┐      │
-│  │ Middleware  │  │           Route Handlers                │     │
-│  │ (JWT Auth) │  │  auth · cycles · logs · analytics ·     │     │
-│  └──────┬─────┘  │  reminders                              │     │
-│         │        └──────────────┬───────────────────────────┘     │
+│  │ Middleware │  │           Route Handlers               │      │
+│  │ (JWT Auth) │  │  auth · cycles · logs · analytics ·    │      │
+│  └──────┬─────┘  │  reminders                             │      │
+│         │        └──────────────┬─────────────────────────┘      │
 │         │                      │                                 │
 │  ┌──────▼──────────────────────▼──────────────────────┐          │
 │  │              Controllers                           │          │

@@ -188,40 +188,10 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Gemini AI Body & Wellness Tips */}
-        {aiInsights && (
-          <div className="card ai-tips-card">
-            <h3>AI Health Insights</h3>
-            <div className="ai-tips-list">
-              {aiInsights.bodyTip && (
-                <div className="ai-tip-item">
-                  <span className="ai-tip-icon">🧬</span>
-                  <div>
-                    <strong>Your Body</strong>
-                    <p>{aiInsights.bodyTip}</p>
-                  </div>
-                </div>
-              )}
-              {aiInsights.wellnessTip && (
-                <div className="ai-tip-item">
-                  <span className="ai-tip-icon">💆‍♀️</span>
-                  <div>
-                    <strong>Wellness Tip</strong>
-                    <p>{aiInsights.wellnessTip}</p>
-                  </div>
-                </div>
-              )}
-              {aiInsights.encouragement && (
-                <div className="ai-encouragement">{aiInsights.encouragement}</div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Gemini AI Suggestions */}
+        {/* AI Suggestions */}
         {aiSuggestions?.suggestions?.length > 0 && (
           <div className="card ai-suggestions-card">
-            <h3>Gemini AI Suggestions</h3>
+            <h3>AI Suggestions</h3>
             {aiSuggestions.greeting && (
               <p className="ai-greeting">{aiSuggestions.greeting}</p>
             )}

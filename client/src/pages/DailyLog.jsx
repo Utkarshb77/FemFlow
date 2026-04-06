@@ -90,6 +90,19 @@ export default function DailyLog() {
       };
       await createOrUpdateLog(payload);
       setSaved(true);
+      // Reset form after saving
+      setForm({
+        date: new Date().toISOString().split('T')[0],
+        mood: '',
+        symptoms: [],
+        sleepHours: '',
+        waterIntake: '',
+        exerciseMinutes: '',
+        stressLevel: 3,
+        diet: [],
+        weight: '',
+        notes: '',
+      });
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       alert(err.response?.data?.message || 'Error saving log');
@@ -108,16 +121,14 @@ export default function DailyLog() {
       {saved && <div className="success-message">Log saved successfully! ✓</div>}
 
       <form onSubmit={handleSubmit} className="daily-log-form">
-        {/* Date */}
-        <div className="card">
-          <div className="form-group">
-            <label>Date</label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-            />
-          </div>
+        {/* Today's Date Display */}
+        <div className="card today-date-card">
+          <h3>📅 {new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</h3>
         </div>
 
         {/* Mood */}
@@ -242,12 +253,14 @@ export default function DailyLog() {
         {/* Notes */}
         <div className="card">
           <h3>Notes</h3>
-          <textarea
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            placeholder="Anything else you want to note..."
-            rows={3}
-          />
+          <div className="form-group">
+            <textarea
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              placeholder="Anything else you want to note..."
+              rows={4}
+            />
+          </div>
         </div>
 
         <button type="submit" className="btn-primary btn-save-log">

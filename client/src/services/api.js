@@ -36,11 +36,4 @@ export const getPCOSScore = () => API.get('/analytics/pcos-score');
 export const getSummary = () => API.get('/analytics/summary');
 export const getAISuggestions = () => API.get('/analytics/ai-suggestions');
 
-// Reminders
-export const createReminder = (data) => API.post('/reminders', data);
-export const getReminders = () => API.get('/reminders');
-export const getActiveReminders = () => API.get('/reminders/active');
-export const updateReminder = (id, data) => API.put(`/reminders/${id}`, data);
-export const deleteReminder = (id) => API.delete(`/reminders/${id}`);
-
 export default API;
