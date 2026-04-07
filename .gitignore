@@ -28,6 +28,3 @@ server/.env
 client/.env
 client/.env.local
 client/.env.production
-
-# Deployment configs
-client/vercel.json
