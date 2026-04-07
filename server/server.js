@@ -28,15 +28,30 @@ app.get('/api/health', (req, res) => {
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 
+// Add mongoose connection event listeners for better debugging
+mongoose.connection.on('connected', () => {
+  console.log('✓ MongoDB connection established successfully');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('✗ MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠ MongoDB disconnected');
+});
+
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB');
+    console.log('✓ Mongoose connected to MongoDB Atlas');
+    console.log('Database:', mongoose.connection.name);
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`✓ Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err);
+    console.error('✗ MongoDB connection error:', err.message);
+    console.error('Full error:', err);
     process.exit(1);
   });
